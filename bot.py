@@ -1,4 +1,4 @@
-from pyrogram import Client, filters
+from pyrogram import Client, filters, idle
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ForceReply
 from video_processor import VideoProcessor
 import os
@@ -10,37 +10,6 @@ class VideoBot:
         self.processor = VideoProcessor(temp_dir)
         self.temp_dir = temp_dir
         self.user_data: Dict[int, dict] = {}
-
-    async def handle_compress_click(self, callback: CallbackQuery):
-        keyboard = InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("1080p", callback_data="compress_1080"),
-                InlineKeyboardButton("720p", callback_data="compress_720"),
-                InlineKeyboardButton("480p", callback_data="compress_480")
-            ],
-            [
-                InlineKeyboardButton("CRF: 18 (High)", callback_data="crf_18"),
-                InlineKeyboardButton("CRF: 24 (Medium)", callback_data="crf_24"),
-                InlineKeyboardButton("CRF: 28 (Low)", callback_data="crf_28")
-            ],
-            [InlineKeyboardButton("Custom CRF (16-35)", callback_data="crf_custom")],
-            [InlineKeyboardButton("✅ Start Compression", callback_data="compress_start")],
-            [InlineKeyboardButton("❌ Cancel", callback_data="cancel")]
-        ])
-
-        user_id = callback.from_user.id
-        settings = self.user_data.get(user_id, {}).get('compress_settings', {
-            'resolution': None,
-            'crf': 24
-        })
-
-        await callback.message.edit_text(
-            "**🎯 Compression Settings**\n\n"
-            f"Resolution: {settings.get('resolution', 'Not Set')}\n"
-            f"CRF Value: {settings.get('crf', 'Not Set')}\n\n"
-            "Select your compression settings:",
-            reply_markup=keyboard
-        )
 
     async def start(self):
         @self.app.on_message(filters.command("start"))
@@ -78,41 +47,10 @@ class VideoBot:
             
             if data == "compress":
                 await self.handle_compress_click(callback)
-            elif data.startswith(("compress_", "crf_")):
-                await self.handle_compress_callback(callback)
+            elif data == "cancel":
+                await callback.message.delete()
             # Add other handlers...
 
         await self.app.start()
         print("Bot is running...")
-        await self.app.idle()
-
-    async def handle_compress_callback(self, callback: CallbackQuery):
-        user_id = callback.from_user.id
-        data = callback.data
-        
-        if user_id not in self.user_data:
-            self.user_data[user_id] = {}
-        if 'compress_settings' not in self.user_data[user_id]:
-            self.user_data[user_id]['compress_settings'] = {
-                'resolution': None,
-                'crf': 24
-            }
-
-        settings = self.user_data[user_id]['compress_settings']
-
-        if data.startswith('compress_'):
-            resolution = data.split('_')[1]
-            if resolution in ['1080', '720', '480']:
-                settings['resolution'] = f"{resolution}p"
-                await self.update_compress_menu(callback.message, settings)
-        
-        elif data.startswith('crf_'):
-            crf_value = data.split('_')[1]
-            if crf_value == 'custom':
-                await callback.message.reply_text(
-                    "Please enter a CRF value (16-35):",
-                    reply_markup=ForceReply()
-                )
-            else:
-                settings['crf'] = int(crf_value)
-                await self.update_compress_menu(callback.message, settings)
+        await idle()  # Use the imported idle function
