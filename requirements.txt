@@ -1,5 +1,7 @@
 pyrogram
-tgcrypto
-ffmpeg-python
-python-dotenv
-aiofiles
+tgcrypto==1.2.5
+python-dotenv==1.0.0
+ffmpeg-python==0.2.0
+aiofiles==23.2.1
+pillow==10.0.0
+hachoir==3.2.0
