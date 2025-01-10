@@ -71,20 +71,6 @@ class SizeFormatter:
         except:
             return None
 
-I see the error is in utils/helpers.py where we need to import List and Dict from the typing module. Let me fix that.
-
-Here’s the corrected version of utils/helpers.py:
-
-import time
-import math
-import logging
-from typing import Union, Dict, List, Optional
-from datetime import datetime
-from pathlib import Path
-
-logger = logging.getLogger(__name__)
-
-# ... [previous TimeFormatter and SizeFormatter classes remain the same]
 
 class MediaInfo:
     def __init__(self, info_dict: Dict):
