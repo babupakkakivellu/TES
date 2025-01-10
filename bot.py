@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from pyrogram import Client, filters
+from pyrogram import Client, filters, idle  # Add idle to the imports
 from pyrogram.types import Message, CallbackQuery
 from processors.video_processor import VideoProcessor
 from processors.file_manager import FileManager
